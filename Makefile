@@ -1,43 +1,43 @@
 ### executable
-NAME		=	Harl
-BIN			=   bin/$(NAME)
+BIN			=   runthis
 
 ### directories
 SRC_DIR		=	src/
 OBJ_DIR		=	obj/
-BIN_DIR		=	bin/
 
 ### files
-FILES		=	Harl main UserInterface
-SOURCES		=	$(addsuffix .cpp, $(FILES))
-OBJECTS		=	$(addprefix $(OBJ_DIR), $(SOURCES:.cpp=.o))
+SOURCES		:= $(wildcard $(SRC_DIR)*.cpp)
+OBJECTS		:= $(patsubst $(SRC_DIR)%.cpp, $(OBJ_DIR)%.o, $(SOURCES))
 
 ### variables
 COMPILER	=   c++ -std=c++98 $(OPTIMIZE)
 OPTIMIZE	=	-O2
 INCLUDES	=	-I ./includes
-FLAGS       =	-Wall -Wextra -Werror
-DFLAGS		=	-Wconversion -g -fsanitize=address
+FLAGS       =	-Wall -Wextra -Werror -Wconversion
+# FLAGS		+=	-g -fsanitize=address
 
 ### rules
 all:		$(BIN)
 
-$(BIN): $(OBJECTS) | $(BIN_DIR)
-			$(COMPILER) $(OBJECTS) -o $(BIN)
-
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+$(BIN): $(OBJECTS)
+			@ $(COMPILER) $(OBJECTS) $(FLAGS) -o $(BIN)
+			@echo "\n\033[0;32mCompilation done!\033[0m"
 
 $(OBJ_DIR)%.o:	$(SRC_DIR)%.cpp
-			mkdir -p $(@D)
-			$(COMPILER) $(INCLUDES) $(FLAGS) -c $< -o $@
+			@mkdir -p $(@D)
+			@printf "\033[0;33mGenerating %-38.38s\r" $@
+			@$(COMPILER) $(INCLUDES) $(FLAGS) -c $< -o $@
+
+run: all
+			@./$(BIN)
 
 clean:
-			rm -rf $(OBJ_DIR)
+			@rm -rf $(OBJ_DIR)
+			@printf "\033[0;31mDelete object files\n"
 
 fclean:		clean
-			rm -rf $(BIN_DIR)
+			rm -f $(BIN)
 
-re:			fclean all
+re:	fclean all
 
-.PHONY:		all clean fclean re run
+.PHONY:			all clean fclean run 
